@@ -1,0 +1,89 @@
+<html lang="">
+<head>
+    <title>Stargazing</title>
+    <link rel="shortcut icon" href="/images/moon.ico" type="image/x-icon">
+    <link rel="icon" href="/images/moon.ico" type="image/x-icon">
+    <link rel="image_src" type="image/jpeg" href="images/moon.jpg">
+    <link rel="stylesheet" type="text/css" href="CSS/styles.css">
+
+</head>
+
+<body data-new-gr-c-s-check-loaded="14.1031.0" data-gr-ext-installed="">
+<div id="cover"></div>
+
+<audio class="audio" <!--controls onload="pauseAudio()"--> >
+
+    <source src="media/Small%20Memory.mp3" type="audio/mp3">
+
+</audio>
+
+<div class="mainTitle title" style="opacity: 1;">
+    <div>Stargazing</div>
+    <div class="sub-title"> A small star to help clear your mind</div>
+    <br>
+    <div class="sub-title custom-message-username"></div>
+</div>
+
+<div class="mainStar" style="opacity: 0;">
+    <div class="thought">
+        <span class="thoughtText"></span>
+    </div>
+</div>
+
+<div class="message" style="opacity: 0;">
+    <span class="insideMessage" style="display: inline;">Put a stressful thought in the star</span>
+</div>
+
+
+<input placeholder="What's bothering you?..." class="typeHere" style="position: fixed; opacity: 0;">
+<a href="#" class="button submit btn-enterthought" style="position: fixed; opacity: 0;"><span>Done</span>
+</a>
+
+<div class="overlay" style="opacity: 0;">
+    <div class="title done title-done" style="opacity: 1;">
+        I hope you feel a little less stressed,
+        <br>a little more connected,
+        <br>and just more at peace.
+    </div>
+    <div class="content-wrapper">
+        <!--<div class="subscribe-wrapper">
+            <span style="font-size: 25px; opacity: 0.8;" class="with-love mindful-tools">Online therapy is a
+                great way to talk through your stressful thoughts
+            </span>
+            <button style="width: 400px; margin-top: 20px;" class="button subscribe cta">
+                <p style="margin-top:-25px; width: 40px;"></p>Online-therapy.com (20% off)<p></p>
+            </button>
+        </div>
+        <div class="subscribe-wrapper">
+            <span class="with-love mindful-tools">New mindfulness tools coming soon</span>
+            <form class="done" action="/subscribe" method="POST" id="subForm" accept-charset="utf-8" style="opacity: 1;">
+                <input placeholder="Enter email for updates" class="emailAddy" id="fieldEmail" name="email" type="email" required="">
+                <button class="button subscribe" type="submit">
+                    <p style="margin-top:-10px">subscribe</p>
+                </button>
+                <input style="display: none" name="message" value="Help"></form></div> -->
+
+        <div class="done2 with-love" style="display: inline; opacity: 0.5;">Made with <span class="heart"><3</span> by <a style="color: yellow; text-decoration: none" >Sebsen</a>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    let x = document.getElementById("audio");
+
+    function pauseAudio() {
+        x.pause();
+    }
+
+
+</script>
+
+<script src="JS/jquery-1.11.2.min.js"></script>
+<script src="JS/jquery.textfill.min.js"></script>
+<script src="JS/d3.js" charset="utf-8"></script>
+<script src="JS/message.js"></script>
+<script src="JS/stars.js"></script>
+<script src="JS/html2canvas.js"></script>
+
+
