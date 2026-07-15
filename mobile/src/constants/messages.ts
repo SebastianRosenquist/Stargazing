@@ -1,0 +1,21 @@
+// Ported from JS/message.js — the live (non-commented-out) rotating message list.
+export const DEFAULT_MESSAGES: string[] = [
+  'Take a deep breath in....',
+  '....and breathe out',
+  'Everything is okay',
+  'Your life is okay',
+  'Life is much grander than this thought',
+  'The universe is over 93 billion light-years in distance',
+  'Our galaxy is small',
+  'Our sun is tiny....',
+  '....and our earth is microscopic',
+  'Time and space moves ever on',
+  'Like this thought',
+  'This thought.... does not matter',
+  'It can easily disappear',
+  'and life will go on....',
+  'Just breathe in....',
+  '....and breathe out',
+  'And when overwhelmed, look up and remember....',
+  '....thoughts, like stars, can be just memories of light',
+];
