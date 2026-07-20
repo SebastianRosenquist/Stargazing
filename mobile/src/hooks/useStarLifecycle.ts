@@ -11,14 +11,14 @@ const AFTER_SUBMIT_DELAY = 4000; // initializeDisappear -> makeStarDisappear
 const BEFORE_SHRINK_DELAY = 3000; // makeStarDisappear -> resizeStar
 const SHRINK_DURATION = 60000;
 const DRIFT_DURATION = 26000;
+const MESSAGE_READ_DELAY = 4700; // let the final message stay fully visible before it fades
 const OVERLAY_DELAY = 1000;
 
-// CSS .mainStar: 300x300px, margin-left -170px/-25px, margin-top -150px/-175px/-1000px.
-// Converted to translate deltas from the centered resting position.
+// Star shrinks straight down in the center (as if drifting away from the
+// viewer), then drifts upward off-screen at the end.
 const STAR_SIZE = 300;
-const SHRINK_TRANSLATE_X = 145; // margin-left: -170 -> -25
-const SHRINK_TRANSLATE_Y = -25; // margin-top: -150 -> -175
-const DRIFT_TRANSLATE_Y = -825; // margin-top: -175 -> -1000
+const SHRINK_TRANSLATE_Y = -25;
+const DRIFT_TRANSLATE_Y = -825;
 const SHRINK_SCALE = 4 / STAR_SIZE;
 
 export type LifecyclePhase = 'intro' | 'awaitingThought' | 'submitted' | 'done';
@@ -28,6 +28,7 @@ export function useStarLifecycle() {
   const [titleVisible, setTitleVisible] = useState(true);
   const [rotateMessages, setRotateMessages] = useState(false);
   const [thoughtText, setThoughtText] = useState('');
+  const [cycleKey, setCycleKey] = useState(0);
 
   const titleOpacity = useSharedValue(1);
   const starOpacity = useSharedValue(0);
@@ -76,7 +77,6 @@ export function useStarLifecycle() {
 
         schedule(() => {
           starScale.value = withTiming(SHRINK_SCALE, { duration: SHRINK_DURATION, easing: Easing.linear });
-          starTranslateX.value = withTiming(SHRINK_TRANSLATE_X, { duration: SHRINK_DURATION, easing: Easing.linear });
           starTranslateY.value = withTiming(SHRINK_TRANSLATE_Y, { duration: SHRINK_DURATION, easing: Easing.linear });
 
           schedule(() => {
@@ -87,15 +87,37 @@ export function useStarLifecycle() {
 
             schedule(() => {
               setRotateMessages(false);
-              messageOpacity.value = withTiming(0, { duration: 1000 });
-              schedule(() => setPhase('done'), OVERLAY_DELAY);
+
+              schedule(() => {
+                messageOpacity.value = withTiming(0, { duration: 1000 });
+                schedule(() => setPhase('done'), OVERLAY_DELAY);
+              }, MESSAGE_READ_DELAY);
             }, DRIFT_DURATION);
           }, SHRINK_DURATION);
         }, BEFORE_SHRINK_DELAY);
       }, AFTER_SUBMIT_DELAY);
     },
-    [phase, schedule, starScale, starTranslateX, starTranslateY, messageOpacity, thoughtTextOpacity, inputOpacity]
+    [phase, schedule, starScale, starTranslateY, messageOpacity, thoughtTextOpacity, inputOpacity]
   );
+
+  const restart = useCallback(() => {
+    timeouts.current.forEach(clearTimeout);
+    timeouts.current = [];
+
+    setThoughtText('');
+    setRotateMessages(false);
+    setCycleKey((key) => key + 1);
+
+    starTranslateX.value = 0;
+    starTranslateY.value = 0;
+    starScale.value = 1;
+    thoughtTextOpacity.value = 0;
+    messageOpacity.value = 0;
+    inputOpacity.value = withTiming(1, { duration: 800 });
+    starOpacity.value = withTiming(1, { duration: 800 });
+
+    setPhase('awaitingThought');
+  }, [starOpacity, starScale, starTranslateX, starTranslateY, messageOpacity, thoughtTextOpacity, inputOpacity]);
 
   return {
     phase,
@@ -111,5 +133,7 @@ export function useStarLifecycle() {
     starScale,
     rotateMessages,
     submitThought,
+    restart,
+    cycleKey,
   };
 }

@@ -20,13 +20,20 @@ export function MessageRotator({ active, messages, containerOpacity }: Props) {
   const [text, setText] = useState(DEFAULT_PROMPT);
   const textOpacity = useSharedValue(1);
   const indexRef = useRef(0);
+  const hasStartedRef = useRef(false);
 
   useEffect(() => {
     if (!active) {
-      setText(DEFAULT_PROMPT);
-      indexRef.current = 0;
+      // Only reset to the default prompt before rotation has ever started.
+      // Once it has run, leave the last message visible instead of
+      // snapping back to the prompt when rotation stops at the end.
+      if (!hasStartedRef.current) {
+        setText(DEFAULT_PROMPT);
+        indexRef.current = 0;
+      }
       return;
     }
+    hasStartedRef.current = true;
     setText(RELAX_MESSAGE);
     indexRef.current = 0;
 

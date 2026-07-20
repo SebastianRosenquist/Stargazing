@@ -8,9 +8,11 @@ import { Canvas, Circle, BlurMask } from '@shopify/react-native-skia';
 // star). The original used html2canvas to snapshot the text onto the star;
 // RN just layers a <Text> over the Skia-drawn glow directly, no snapshot needed.
 const STAR_SIZE = 300;
-// CSS: top:50%, left:50%, margin-left:-170px, margin-top:-150px — a 20px
-// leftward offset from true center that the original design also has.
-const REST_OFFSET_X = -20;
+// The outer glow ring (radius STAR_SIZE/2 + 10) plus its 30px blur needs
+// extra canvas room on every side, or the blur gets hard-clipped at the
+// Canvas bounds and reads as a visible square around the star.
+const GLOW_PADDING = 80;
+const CANVAS_SIZE = STAR_SIZE + GLOW_PADDING * 2;
 
 type Props = {
   starOpacity: SharedValue<number>;
@@ -32,7 +34,7 @@ export function MainStar({
   const wrapperStyle = useAnimatedStyle(() => ({
     opacity: starOpacity.value,
     transform: [
-      { translateX: REST_OFFSET_X + starTranslateX.value },
+      { translateX: starTranslateX.value },
       { translateY: starTranslateY.value },
       { scale: starScale.value },
     ],
@@ -45,13 +47,13 @@ export function MainStar({
   return (
     <Animated.View style={[styles.wrapper, wrapperStyle]} pointerEvents="none">
       <Canvas style={StyleSheet.absoluteFill}>
-        <Circle cx={STAR_SIZE / 2} cy={STAR_SIZE / 2} r={STAR_SIZE / 2 + 10} color="tomato" opacity={0.55}>
+        <Circle cx={CANVAS_SIZE / 2} cy={CANVAS_SIZE / 2} r={STAR_SIZE / 2 + 10} color="tomato" opacity={0.55}>
           <BlurMask blur={30} style="normal" />
         </Circle>
-        <Circle cx={STAR_SIZE / 2} cy={STAR_SIZE / 2} r={STAR_SIZE / 2} color="orange" opacity={0.5}>
+        <Circle cx={CANVAS_SIZE / 2} cy={CANVAS_SIZE / 2} r={STAR_SIZE / 2} color="orange" opacity={0.5}>
           <BlurMask blur={18} style="normal" />
         </Circle>
-        <Circle cx={STAR_SIZE / 2} cy={STAR_SIZE / 2} r={STAR_SIZE / 2 - 10} color="#dddddd" />
+        <Circle cx={CANVAS_SIZE / 2} cy={CANVAS_SIZE / 2} r={STAR_SIZE / 2 - 10} color="#dddddd" />
       </Canvas>
       <Animated.Text style={[styles.thoughtText, textStyle]} numberOfLines={5}>
         {thoughtText}
@@ -65,10 +67,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '50%',
     left: '50%',
-    width: STAR_SIZE,
-    height: STAR_SIZE,
-    marginLeft: -STAR_SIZE / 2,
-    marginTop: -STAR_SIZE / 2,
+    width: CANVAS_SIZE,
+    height: CANVAS_SIZE,
+    marginLeft: -CANVAS_SIZE / 2,
+    marginTop: -CANVAS_SIZE / 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
