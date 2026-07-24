@@ -9,7 +9,7 @@ export type ThemeId =
   | 'overthinking-stream'
   | 'gratitude-keep';
 
-export type ReleaseStyle = 'drift-away' | 'sink-down' | 'float-downstream' | 'stay-and-collect';
+export type ReleaseStyle = 'drift-away' | 'sink-down' | 'float-downstream' | 'stay-and-collect' | 'set-behind-horizon';
 
 export type BackgroundAssetId =
   | 'starfield'

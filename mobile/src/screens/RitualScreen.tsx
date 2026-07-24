@@ -12,6 +12,7 @@ import { ThankYouOverlay } from '../components/ThankYouOverlay';
 import { useStarLifecycle } from '../hooks/useStarLifecycle';
 import { useAmbientAudio } from '../hooks/useAmbientAudio';
 import { useActiveTheme } from '../themes/ThemeProvider';
+import { SunsetScene } from '../components/sunset/SunsetScene';
 
 type Props = {
   authorName: string | null;
@@ -63,13 +64,28 @@ export function RitualScreen({ authorName }: Props) {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <Starfield />
+
+      {theme.backgroundAsset === 'sunset' ? (
+        <SunsetScene
+          key={cycleKey}
+          phase={phase}
+          palette={theme.palette}
+          pacingMultiplier={theme.pacingMultiplier}
+          thoughtText={displayedThought}
+          thoughtTextOpacity={thoughtTextOpacity}
+          messages={theme.messages}
+          rotateMessages={rotateMessages}
+          messageOpacity={messageOpacity}
+        />
+      ) : (
+        <Starfield />
+      )}
 
       {titleVisible ? (
         <TitleScreen title={theme.title} subtitle={theme.subtitle} opacity={titleOpacity} authorName={authorName} />
       ) : null}
 
-      {phase !== 'done' ? (
+      {theme.backgroundAsset !== 'sunset' && phase !== 'done' ? (
         <>
           <MainStar
             palette={theme.palette}

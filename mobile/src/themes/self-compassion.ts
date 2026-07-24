@@ -19,7 +19,7 @@ export const selfCompassion: Theme = {
     'You can be imperfect and still be worthy of your own patience.',
   ],
   closingMessage: "You spoke to yourself with more patience than usual. That's worth noticing — and worth doing again.",
-  releaseStyle: 'drift-away',
+  releaseStyle: 'set-behind-horizon',
   pacingMultiplier: 1.2,
   palette: {
     glowOuter: '#be91c6',
@@ -27,8 +27,8 @@ export const selfCompassion: Theme = {
     core: '#fff3e8',
     background: '#2a1a33',
   },
-  // Dedicated Skia sunset background isn't built yet — falls back to the
-  // existing Starfield/plain background for v1 (accepted product decision).
+  // Renders via SunsetScene (mobile/src/components/sunset/) instead of the
+  // generic Starfield/MainStar — see RitualScreen's backgroundAsset branch.
   backgroundAsset: 'sunset',
   built: true,
   badge: 'The gentlest',

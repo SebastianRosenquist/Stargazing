@@ -16,6 +16,12 @@ const DRIFT_DURATION = 26000;
 const MESSAGE_READ_DELAY = 4700; // let the final message stay fully visible before it fades
 const OVERLAY_DELAY = 1000;
 
+// Exported so bespoke per-theme visuals (e.g. the sunset scene's own sun
+// descent) can stay paced consistently with the shared release window
+// instead of duplicating these numbers.
+export const RELEASE_TIMING = { AFTER_SUBMIT_DELAY, BEFORE_SHRINK_DELAY, SHRINK_DURATION, DRIFT_DURATION };
+export const scaleTiming = (ms: number, pacingMultiplier: number) => ms * pacingMultiplier;
+
 // 'drift-away' (the default): star shrinks straight down in the center (as if
 // drifting away from the viewer), then drifts upward off-screen at the end.
 const STAR_SIZE = 300;
@@ -105,6 +111,9 @@ export function useStarLifecycle({ releaseStyle = 'drift-away', pacingMultiplier
             starScale.value = withTiming(SHRINK_SCALE, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
           } else if (releaseStyle === 'stay-and-collect') {
             starTranslateY.value = withTiming(STAY_RISE_TRANSLATE_Y, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
+          } else if (releaseStyle === 'set-behind-horizon') {
+            // MainStar never mounts for this releaseStyle (the sunset scene
+            // renders its own sun instead) — no star transform to compute here.
           } else {
             starScale.value = withTiming(SHRINK_SCALE, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
             starTranslateY.value = withTiming(SHRINK_TRANSLATE_Y, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
@@ -118,6 +127,8 @@ export function useStarLifecycle({ releaseStyle = 'drift-away', pacingMultiplier
               starTranslateX.value = withTiming(DOWNSTREAM_TRANSLATE_X, { duration: scaled(DRIFT_DURATION), easing: Easing.linear });
             } else if (releaseStyle === 'stay-and-collect') {
               // Star holds in place, joining the (not-yet-persisted) cluster — no further motion.
+            } else if (releaseStyle === 'set-behind-horizon') {
+              // No-op here too — see the shrink-phase branch above.
             } else {
               starTranslateY.value = withTiming(SHRINK_TRANSLATE_Y + DRIFT_TRANSLATE_Y, {
                 duration: scaled(DRIFT_DURATION),
