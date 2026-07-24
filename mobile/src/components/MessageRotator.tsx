@@ -73,5 +73,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 30,
     maxWidth: 320,
+    fontFamily: 'Quicksand_400Regular',
   },
 });

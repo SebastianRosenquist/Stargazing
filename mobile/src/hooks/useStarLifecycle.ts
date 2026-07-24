@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
+import type { ReleaseStyle } from '../themes/types';
 
 // Timings and margin deltas ported directly from JS/message.js's showStar(),
 // disappearTitle(), initializeDisappear(), makeStarDisappear(), and resizeStar().
+// Scaled by the active theme's `pacingMultiplier` (default 1, i.e. unchanged).
 const STAR_REVEAL_DELAY = 7000;
 const TITLE_FADE_START = 5000;
 const TITLE_FADE_DURATION = 4000;
@@ -14,16 +16,34 @@ const DRIFT_DURATION = 26000;
 const MESSAGE_READ_DELAY = 4700; // let the final message stay fully visible before it fades
 const OVERLAY_DELAY = 1000;
 
-// Star shrinks straight down in the center (as if drifting away from the
-// viewer), then drifts upward off-screen at the end.
+// 'drift-away' (the default): star shrinks straight down in the center (as if
+// drifting away from the viewer), then drifts upward off-screen at the end.
 const STAR_SIZE = 300;
 const SHRINK_TRANSLATE_Y = -25;
 const DRIFT_TRANSLATE_Y = -825;
 const SHRINK_SCALE = 4 / STAR_SIZE;
 
+// 'sink-down' (anxiety-grounding): star sinks gently downward and dims,
+// instead of drifting up and away.
+const SINK_TRANSLATE_Y = 60;
+const SINK_FURTHER_TRANSLATE_Y = 260;
+
+// 'float-downstream' (overthinking-stream): star drifts horizontally off one
+// edge of the screen, carrying the thought with it.
+const DOWNSTREAM_TRANSLATE_X = -900;
+
+// 'stay-and-collect' (gratitude-keep): star rises slightly to "join a
+// cluster" rather than disappearing — doesn't shrink away or fade out.
+const STAY_RISE_TRANSLATE_Y = -40;
+
 export type LifecyclePhase = 'intro' | 'awaitingThought' | 'submitted' | 'done';
 
-export function useStarLifecycle() {
+type Options = {
+  releaseStyle?: ReleaseStyle;
+  pacingMultiplier?: number;
+};
+
+export function useStarLifecycle({ releaseStyle = 'drift-away', pacingMultiplier = 1 }: Options = {}) {
   const [phase, setPhase] = useState<LifecyclePhase>('intro');
   const [titleVisible, setTitleVisible] = useState(true);
   const [rotateMessages, setRotateMessages] = useState(false);
@@ -44,6 +64,8 @@ export function useStarLifecycle() {
     const id = setTimeout(fn, delay);
     timeouts.current.push(id);
   }, []);
+
+  const scaled = useCallback((ms: number) => ms * pacingMultiplier, [pacingMultiplier]);
 
   useEffect(() => {
     schedule(() => {
@@ -76,14 +98,32 @@ export function useStarLifecycle() {
         setRotateMessages(true);
 
         schedule(() => {
-          starScale.value = withTiming(SHRINK_SCALE, { duration: SHRINK_DURATION, easing: Easing.linear });
-          starTranslateY.value = withTiming(SHRINK_TRANSLATE_Y, { duration: SHRINK_DURATION, easing: Easing.linear });
+          if (releaseStyle === 'sink-down') {
+            starScale.value = withTiming(SHRINK_SCALE, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
+            starTranslateY.value = withTiming(SINK_TRANSLATE_Y, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
+          } else if (releaseStyle === 'float-downstream') {
+            starScale.value = withTiming(SHRINK_SCALE, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
+          } else if (releaseStyle === 'stay-and-collect') {
+            starTranslateY.value = withTiming(STAY_RISE_TRANSLATE_Y, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
+          } else {
+            starScale.value = withTiming(SHRINK_SCALE, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
+            starTranslateY.value = withTiming(SHRINK_TRANSLATE_Y, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
+          }
 
           schedule(() => {
-            starTranslateY.value = withTiming(SHRINK_TRANSLATE_Y + DRIFT_TRANSLATE_Y, {
-              duration: DRIFT_DURATION,
-              easing: Easing.linear,
-            });
+            if (releaseStyle === 'sink-down') {
+              starTranslateY.value = withTiming(SINK_FURTHER_TRANSLATE_Y, { duration: scaled(DRIFT_DURATION), easing: Easing.linear });
+              starOpacity.value = withTiming(0, { duration: scaled(DRIFT_DURATION), easing: Easing.linear });
+            } else if (releaseStyle === 'float-downstream') {
+              starTranslateX.value = withTiming(DOWNSTREAM_TRANSLATE_X, { duration: scaled(DRIFT_DURATION), easing: Easing.linear });
+            } else if (releaseStyle === 'stay-and-collect') {
+              // Star holds in place, joining the (not-yet-persisted) cluster — no further motion.
+            } else {
+              starTranslateY.value = withTiming(SHRINK_TRANSLATE_Y + DRIFT_TRANSLATE_Y, {
+                duration: scaled(DRIFT_DURATION),
+                easing: Easing.linear,
+              });
+            }
 
             schedule(() => {
               setRotateMessages(false);
@@ -92,12 +132,12 @@ export function useStarLifecycle() {
                 messageOpacity.value = withTiming(0, { duration: 1000 });
                 schedule(() => setPhase('done'), OVERLAY_DELAY);
               }, MESSAGE_READ_DELAY);
-            }, DRIFT_DURATION);
-          }, SHRINK_DURATION);
-        }, BEFORE_SHRINK_DELAY);
-      }, AFTER_SUBMIT_DELAY);
+            }, scaled(DRIFT_DURATION));
+          }, scaled(SHRINK_DURATION));
+        }, scaled(BEFORE_SHRINK_DELAY));
+      }, scaled(AFTER_SUBMIT_DELAY));
     },
-    [phase, schedule, starScale, starTranslateY, messageOpacity, thoughtTextOpacity, inputOpacity]
+    [phase, schedule, scaled, releaseStyle, starScale, starTranslateX, starTranslateY, starOpacity, messageOpacity, thoughtTextOpacity, inputOpacity]
   );
 
   const restart = useCallback(() => {
