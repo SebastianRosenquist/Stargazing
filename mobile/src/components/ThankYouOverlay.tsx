@@ -5,15 +5,14 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 // and online-therapy affiliate CTA in the original are dead/commented-out
 // code and are intentionally not ported here).
 type Props = {
+  closingMessage: string;
   onRestart: () => void;
 };
 
-export function ThankYouOverlay({ onRestart }: Props) {
+export function ThankYouOverlay({ closingMessage, onRestart }: Props) {
   return (
     <View style={styles.overlay}>
-      <Text style={styles.message}>
-        I hope you feel a little less stressed,{'\n'}a little more connected,{'\n'}and just more at peace.
-      </Text>
+      <Text style={styles.message}>{closingMessage}</Text>
       <Text style={styles.credit}>
         Made with <Text style={styles.heart}>{'<3'}</Text> by Sebsen
       </Text>
@@ -41,12 +40,14 @@ const styles = StyleSheet.create({
     fontSize: 26,
     textAlign: 'center',
     lineHeight: 34,
+    fontFamily: 'Quicksand_400Regular',
   },
   credit: {
     color: '#fff',
     opacity: 0.5,
     fontSize: 16,
     marginTop: 24,
+    fontFamily: 'Quicksand_400Regular',
   },
   heart: {
     color: 'red',
@@ -64,5 +65,6 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     letterSpacing: 1,
     textTransform: 'uppercase',
+    fontFamily: 'Quicksand_300Light',
   },
 });

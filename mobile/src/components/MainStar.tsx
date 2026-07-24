@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import { Canvas, Circle, BlurMask } from '@shopify/react-native-skia';
+import type { ThemePalette } from '../themes/types';
 
 // Ported from CSS `.mainStar` (300x300 circle, background #ddd, layered
 // box-shadow glow) and `.thought`/`.thoughtText` (the typed text shown on the
@@ -15,6 +16,7 @@ const GLOW_PADDING = 80;
 const CANVAS_SIZE = STAR_SIZE + GLOW_PADDING * 2;
 
 type Props = {
+  palette: ThemePalette;
   starOpacity: SharedValue<number>;
   starScale: SharedValue<number>;
   starTranslateX: SharedValue<number>;
@@ -24,6 +26,7 @@ type Props = {
 };
 
 export function MainStar({
+  palette,
   starOpacity,
   starScale,
   starTranslateX,
@@ -47,13 +50,13 @@ export function MainStar({
   return (
     <Animated.View style={[styles.wrapper, wrapperStyle]} pointerEvents="none">
       <Canvas style={StyleSheet.absoluteFill}>
-        <Circle cx={CANVAS_SIZE / 2} cy={CANVAS_SIZE / 2} r={STAR_SIZE / 2 + 10} color="tomato" opacity={0.55}>
+        <Circle cx={CANVAS_SIZE / 2} cy={CANVAS_SIZE / 2} r={STAR_SIZE / 2 + 10} color={palette.glowOuter} opacity={0.55}>
           <BlurMask blur={30} style="normal" />
         </Circle>
-        <Circle cx={CANVAS_SIZE / 2} cy={CANVAS_SIZE / 2} r={STAR_SIZE / 2} color="orange" opacity={0.5}>
+        <Circle cx={CANVAS_SIZE / 2} cy={CANVAS_SIZE / 2} r={STAR_SIZE / 2} color={palette.glowInner} opacity={0.5}>
           <BlurMask blur={18} style="normal" />
         </Circle>
-        <Circle cx={CANVAS_SIZE / 2} cy={CANVAS_SIZE / 2} r={STAR_SIZE / 2 - 10} color="#dddddd" />
+        <Circle cx={CANVAS_SIZE / 2} cy={CANVAS_SIZE / 2} r={STAR_SIZE / 2 - 10} color={palette.core} />
       </Canvas>
       <Animated.Text style={[styles.thoughtText, textStyle]} numberOfLines={5}>
         {thoughtText}
@@ -79,5 +82,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 28,
     fontSize: 18,
+    fontFamily: 'Quicksand_400Regular',
   },
 });

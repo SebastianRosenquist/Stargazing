@@ -9,12 +9,13 @@ import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reani
 // dismiss the keyboard (tap outside, or the OS back/dismiss gesture) without
 // accidentally triggering the star animation.
 type Props = {
+  prompt: string;
   opacity: SharedValue<number>;
   onSubmit: (text: string) => void;
   onDraftChange: (text: string) => void;
 };
 
-export function ThoughtInput({ opacity, onSubmit, onDraftChange }: Props) {
+export function ThoughtInput({ prompt, opacity, onSubmit, onDraftChange }: Props) {
   const [value, setValue] = useState('');
 
   const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
@@ -36,7 +37,7 @@ export function ThoughtInput({ opacity, onSubmit, onDraftChange }: Props) {
       <TextInput
         value={value}
         onChangeText={handleChangeText}
-        placeholder="What's bothering you?..."
+        placeholder={prompt}
         placeholderTextColor="#888"
         style={styles.input}
         multiline
@@ -68,6 +69,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
     textAlignVertical: 'top',
+    fontFamily: 'Quicksand_400Regular',
   },
   button: {
     marginTop: 16,
@@ -82,5 +84,6 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     letterSpacing: 2,
     textTransform: 'uppercase',
+    fontFamily: 'Quicksand_300Light',
   },
 });
