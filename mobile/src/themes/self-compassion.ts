@@ -20,7 +20,17 @@ export const selfCompassion: Theme = {
   ],
   closingMessage: "You spoke to yourself with more patience than usual. That's worth noticing — and worth doing again.",
   releaseStyle: 'set-behind-horizon',
-  pacingMultiplier: 1.2,
+  // ~20% slower release than the default, so the sun's descent reads as an
+  // unhurried "rising into gentler light" rather than a quick fade. Edit any
+  // of these directly to retune this theme's pacing.
+  timing: {
+    afterSubmitDelay: 4800,
+    beforeShrinkDelay: 3600,
+    shrinkDuration: 72000,
+    driftDuration: 31200,
+    messageReadDelay: 5640,
+    overlayDelay: 1200,
+  },
   palette: {
     glowOuter: '#be91c6',
     glowInner: '#fea798',

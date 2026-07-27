@@ -24,11 +24,6 @@ watching it drift, or sinking past it.
 
 ## Ritual / mechanic changes
 
-`releaseStyle` — reuse `drift-away` (the default's shrink-and-ascend), but slower
-(`pacingMultiplier: 1.2`) and paired with a warmer palette so the ascent reads as "rising into
-gentler light" rather than "disappearing into vast, indifferent space." No new release mechanic
-needed for this one.
-
 Input prompt: `"What did you just tell yourself?"`
 
 ## Message script (draft)

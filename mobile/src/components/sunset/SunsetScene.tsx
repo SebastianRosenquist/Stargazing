@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, useWindowDimensions } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming, type SharedValue } from 'react-native-reanimated';
-import { RELEASE_TIMING, scaleTiming, type LifecyclePhase } from '../../hooks/useStarLifecycle';
+import type { LifecyclePhase } from '../../hooks/useStarLifecycle';
 import { useMessageRotation } from '../../hooks/useMessageRotation';
-import type { ThemePalette } from '../../themes/types';
+import type { ThemePalette, ThemeTiming } from '../../themes/types';
 import { SunsetLandscape } from './SunsetLandscape';
 import { SunsetSun } from './SunsetSun';
 import { vmin } from './palette';
@@ -11,7 +11,7 @@ import { vmin } from './palette';
 type Props = {
   phase: LifecyclePhase;
   palette: ThemePalette;
-  pacingMultiplier?: number;
+  timing: ThemeTiming;
   thoughtText: string;
   thoughtTextOpacity: SharedValue<number>;
   messages: string[];
@@ -27,7 +27,7 @@ const REVERSED_EASE = Easing.bezier(0.75, 0, 0.75, 0.9);
 export function SunsetScene({
   phase,
   palette,
-  pacingMultiplier = 1,
+  timing,
   thoughtText,
   thoughtTextOpacity,
   messages,
@@ -49,20 +49,14 @@ export function SunsetScene({
 
   // One-shot descent, gated on submission — never starts while the user is
   // still typing, and runs across the same release window every other theme
-  // uses for its shrink/drift, so pacing stays consistent across themes.
+  // uses for its shrink/drift, so pacing stays consistent (and this theme's
+  // own exact timing lives in self-compassion.ts's `timing` field).
   useEffect(() => {
     if (phase !== 'submitted') return;
-    sunCenterY.value = withDelay(
-      scaleTiming(RELEASE_TIMING.AFTER_SUBMIT_DELAY + RELEASE_TIMING.BEFORE_SHRINK_DELAY, pacingMultiplier),
-      withTiming(setCenterY, {
-        duration: scaleTiming(RELEASE_TIMING.SHRINK_DURATION + RELEASE_TIMING.DRIFT_DURATION, pacingMultiplier),
-        easing: REVERSED_EASE,
-      })
-    );
-    sunScale.value = withDelay(
-      scaleTiming(RELEASE_TIMING.AFTER_SUBMIT_DELAY + RELEASE_TIMING.BEFORE_SHRINK_DELAY, pacingMultiplier),
-      withTiming(0.7, { duration: scaleTiming(RELEASE_TIMING.SHRINK_DURATION + RELEASE_TIMING.DRIFT_DURATION, pacingMultiplier) })
-    );
+    const delay = timing.afterSubmitDelay + timing.beforeShrinkDelay;
+    const duration = timing.shrinkDuration + timing.driftDuration;
+    sunCenterY.value = withDelay(delay, withTiming(setCenterY, { duration, easing: REVERSED_EASE }));
+    sunScale.value = withDelay(delay, withTiming(0.7, { duration }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 

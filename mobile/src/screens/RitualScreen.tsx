@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { withTiming } from 'react-native-reanimated';
@@ -12,6 +12,7 @@ import { ThankYouOverlay } from '../components/ThankYouOverlay';
 import { useStarLifecycle } from '../hooks/useStarLifecycle';
 import { useAmbientAudio } from '../hooks/useAmbientAudio';
 import { useActiveTheme } from '../themes/ThemeProvider';
+import { getThemeTiming } from '../themes/types';
 import { SunsetScene } from '../components/sunset/SunsetScene';
 
 type Props = {
@@ -22,6 +23,7 @@ export function RitualScreen({ authorName }: Props) {
   const { theme } = useActiveTheme();
   const { play: playAmbientAudio } = useAmbientAudio(theme.ambientTrackId);
   const [draftText, setDraftText] = useState('');
+  const timing = useMemo(() => getThemeTiming(theme), [theme]);
 
   const {
     phase,
@@ -39,7 +41,7 @@ export function RitualScreen({ authorName }: Props) {
     submitThought,
     restart,
     cycleKey,
-  } = useStarLifecycle({ releaseStyle: theme.releaseStyle, pacingMultiplier: theme.pacingMultiplier });
+  } = useStarLifecycle({ releaseStyle: theme.releaseStyle, timing });
 
   // Mirror what's being typed onto the star in real time, so people can see
   // their thought forming there instead of only in the (keyboard-adjacent)
@@ -70,7 +72,7 @@ export function RitualScreen({ authorName }: Props) {
           key={cycleKey}
           phase={phase}
           palette={theme.palette}
-          pacingMultiplier={theme.pacingMultiplier}
+          timing={timing}
           thoughtText={displayedThought}
           thoughtTextOpacity={thoughtTextOpacity}
           messages={theme.messages}

@@ -26,7 +26,17 @@ export const anxietyGrounding: Theme = {
   ],
   closingMessage: "Your breathing has slowed. The feeling may still be here, and that's okay — you're steadier than you were a few minutes ago.",
   releaseStyle: 'sink-down',
-  pacingMultiplier: 1.3,
+  // ~30% slower than the default — anxiety responds better to "settle down"
+  // than a quick release. Edit any of these directly to retune this theme's
+  // pacing.
+  timing: {
+    afterSubmitDelay: 5200,
+    beforeShrinkDelay: 3900,
+    shrinkDuration: 78000,
+    driftDuration: 33800,
+    messageReadDelay: 6110,
+    overlayDelay: 1300,
+  },
   palette: {
     glowOuter: '#1e3a5f',
     glowInner: '#2f6690',

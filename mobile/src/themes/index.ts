@@ -18,4 +18,5 @@ export function getTheme(id: ThemeId): Theme {
 
 export const DEFAULT_THEME_ID: ThemeId = 'stress-perspective';
 
-export type { Theme, ThemeId, ReleaseStyle, ThemePalette, BackgroundAssetId } from './types';
+export type { Theme, ThemeId, ReleaseStyle, ThemePalette, BackgroundAssetId, ThemeTiming } from './types';
+export { getThemeTiming, DEFAULT_TIMING } from './types';
