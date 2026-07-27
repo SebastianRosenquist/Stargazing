@@ -20,16 +20,21 @@ export const selfCompassion: Theme = {
   ],
   closingMessage: "You spoke to yourself with more patience than usual. That's worth noticing — and worth doing again.",
   releaseStyle: 'set-behind-horizon',
-  // ~20% slower release than the default, so the sun's descent reads as an
-  // unhurried "rising into gentler light" rather than a quick fade. Edit any
-  // of these directly to retune this theme's pacing.
+  ambientTrackId: 'terrible-times-reprise',
+  // Sized so the post-submit sequence (message rotation through the closing
+  // overlay) totals ~98.17s — the exact length of
+  // assets/media/terrible-times-reprise.mp3 — so the song finishes right as
+  // the ritual ends, instead of being cut off or leaving dead air.
+  // Proportions are otherwise the same ~20%-slower-than-default shape as
+  // before; edit any field directly to retune this theme's pacing (and adjust
+  // the total to match if the track ever changes).
   timing: {
-    afterSubmitDelay: 4800,
-    beforeShrinkDelay: 3600,
-    shrinkDuration: 72000,
-    driftDuration: 31200,
-    messageReadDelay: 5640,
-    overlayDelay: 1200,
+    afterSubmitDelay: 3978,
+    beforeShrinkDelay: 2984,
+    shrinkDuration: 59677,
+    driftDuration: 25860,
+    messageReadDelay: 4675,
+    overlayDelay: 995,
   },
   palette: {
     glowOuter: '#be91c6',
