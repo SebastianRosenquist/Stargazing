@@ -24,7 +24,7 @@ import {
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
-import { V1, V2, V3, V4, S1, S2, vmin } from './palette';
+import { V1, V2, V3, V4, S1, S2, TWILIGHT, vmin } from './palette';
 
 // CSS .light/.light-1..7's relative vertical offset below the horizon and bar
 // width — the "sun glitter path" fan.
@@ -268,6 +268,17 @@ function LightStreak({ cx, cy, width: barWidth, proximity }: { cx: number; cy: n
   );
 }
 
+// A cool blue-violet wash over the entire scene, driven by how far the sun
+// has traveled past the horizon — absent while it's above/at the horizon,
+// full once it's settled below it. Sits on top of everything else in the
+// canvas (multiply blend) so the whole composition — sky, hills, water,
+// lotus, foreground — reads as "after the sun sets" rather than requiring
+// every individual gradient to be re-tinted separately.
+function TwilightVeil({ width, height, progress }: { width: number; height: number; progress: SharedValue<number> }) {
+  const opacity = useDerivedValue(() => progress.value * 0.6, [progress]);
+  return <Rect x={0} y={0} width={width} height={height} color={TWILIGHT} opacity={opacity} blendMode="multiply" />;
+}
+
 type Props = {
   sunCenterY: SharedValue<number>;
   sunCenterX: number;
@@ -291,6 +302,15 @@ export function SunsetLandscape({ sunCenterY, sunCenterX }: Props) {
   const horizonProximity = useDerivedValue(() => {
     const distance = Math.abs(sunCenterY.value - horizonY);
     return Math.max(0, 1 - distance / (sunDiameter * 1.3));
+  }, [sunCenterY, sunDiameter]);
+
+  // 0 while the sun is above/at the horizon, ramping to 1 as it travels the
+  // roughly one-and-a-half-sun-widths below the horizon it takes to fully
+  // settle — "after the sun sets" as an actual position, not a ritual-phase
+  // flag, so the color shift tracks the visual moment it's describing.
+  const twilightProgress = useDerivedValue(() => {
+    const belowHorizon = sunCenterY.value - horizonY;
+    return Math.max(0, Math.min(1, belowHorizon / (sunDiameter * 1.5)));
   }, [sunCenterY, sunDiameter]);
 
   const hills: HillConfig[] = [
@@ -435,6 +455,9 @@ export function SunsetLandscape({ sunCenterY, sunCenterX }: Props) {
       {rightReeds.map((r, i) => (
         <Reed key={`r${i}`} stem={r} bottom={height} />
       ))}
+
+      {/* Cool wash over the whole scene once the sun has set */}
+      <TwilightVeil width={width} height={height} progress={twilightProgress} />
     </Canvas>
   );
 }
