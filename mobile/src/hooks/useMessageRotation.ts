@@ -5,13 +5,19 @@ import { useSharedValue, withTiming } from 'react-native-reanimated';
 // displayMessages()/makeStarDisappear()) so a second, differently-positioned
 // consumer (the sunset scene's water-positioned messages) can reuse the exact
 // same rotation/fade behavior instead of duplicating it.
-const DEFAULT_PROMPT = 'Put a stressful thought in the star';
 const RELAX_MESSAGE = 'Relax and watch your thought';
-const ROTATE_INTERVAL_MS = 4700;
-const FADE_DURATION = 500;
 
-export function useMessageRotation(messages: string[], active: boolean) {
-  const [text, setText] = useState(DEFAULT_PROMPT);
+// Defaults match every theme's current behavior — callers pass a theme's
+// resolved `timing.messageRotateInterval`/`messageFadeDuration` explicitly;
+// these only cover call sites that don't.
+export function useMessageRotation(
+  messages: string[],
+  active: boolean,
+  defaultPrompt: string,
+  rotateIntervalMs = 4700,
+  fadeDurationMs = 500
+) {
+  const [text, setText] = useState(defaultPrompt);
   const textOpacity = useSharedValue(1);
   const indexRef = useRef(0);
   const hasStartedRef = useRef(false);
@@ -22,7 +28,7 @@ export function useMessageRotation(messages: string[], active: boolean) {
       // Once it has run, leave the last message visible instead of
       // snapping back to the prompt when rotation stops at the end.
       if (!hasStartedRef.current) {
-        setText(DEFAULT_PROMPT);
+        setText(defaultPrompt);
         indexRef.current = 0;
       }
       return;
@@ -32,17 +38,17 @@ export function useMessageRotation(messages: string[], active: boolean) {
     indexRef.current = 0;
 
     const interval = setInterval(() => {
-      textOpacity.value = withTiming(0, { duration: FADE_DURATION });
+      textOpacity.value = withTiming(0, { duration: fadeDurationMs });
       setTimeout(() => {
         const next = messages[indexRef.current % messages.length];
         indexRef.current += 1;
         setText(next);
-        textOpacity.value = withTiming(1, { duration: FADE_DURATION });
-      }, FADE_DURATION);
-    }, ROTATE_INTERVAL_MS);
+        textOpacity.value = withTiming(1, { duration: fadeDurationMs });
+      }, fadeDurationMs);
+    }, rotateIntervalMs);
 
     return () => clearInterval(interval);
-  }, [active, messages, textOpacity]);
+  }, [active, messages, textOpacity, rotateIntervalMs, fadeDurationMs, defaultPrompt]);
 
   return { text, textOpacity };
 }

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { StyleSheet, useWindowDimensions } from 'react-native';
 import {
   Canvas,
@@ -279,6 +279,65 @@ function TwilightVeil({ width, height, progress }: { width: number; height: numb
   return <Rect x={0} y={0} width={width} height={height} color={TWILIGHT} opacity={opacity} blendMode="multiply" />;
 }
 
+type StarConfig = {
+  x: number;
+  y: number;
+  radius: number;
+  /** Where in the 0-1 twilight ramp this star starts fading in — staggers the whole field in rather than popping at once. */
+  appearAt: number;
+  twinkleDelay: number;
+  twinkleDuration: number;
+};
+
+function generateStars(count: number, width: number, horizonY: number): StarConfig[] {
+  return Array.from({ length: count }, () => ({
+    x: Math.random() * width,
+    // Keep clear of the very bottom of the sky band, right at the horizon —
+    // reads as too close to the hills/water otherwise.
+    y: Math.random() * horizonY * 0.85,
+    radius: 0.5 + Math.random() * 1.3,
+    appearAt: Math.random() * 0.8,
+    twinkleDelay: Math.random() * 2000,
+    twinkleDuration: 1200 + Math.random() * 1400,
+  }));
+}
+
+// A star and its own reflection in the water, mirrored across the horizon
+// (perfectly symmetric with the sky band, since both halves of the screen
+// are the same height). Fades in as `progress` (the shared twilight ramp)
+// crosses this star's individual `appearAt` point, then twinkles gently once
+// visible. Drawn above the twilight veil so the darkening wash doesn't dim
+// the very thing that's supposed to read as bright against it.
+function TwilightStar({ config, horizonY, progress }: { config: StarConfig; horizonY: number; progress: SharedValue<number> }) {
+  const { x, y, radius, appearAt, twinkleDelay, twinkleDuration } = config;
+  const twinkle = useSharedValue(0.7);
+
+  useEffect(() => {
+    twinkle.value = withDelay(
+      twinkleDelay,
+      withRepeat(withSequence(withTiming(1, { duration: twinkleDuration }), withTiming(0.55, { duration: twinkleDuration })), -1, true)
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const opacity = useDerivedValue(() => {
+    const appear = Math.max(0, Math.min(1, (progress.value - appearAt) / 0.2));
+    return appear * (0.6 + 0.4 * twinkle.value);
+  }, [progress, twinkle]);
+
+  const reflectionOpacity = useDerivedValue(() => opacity.value * 0.4, [opacity]);
+  const reflectedY = horizonY + (horizonY - y);
+
+  return (
+    <>
+      <Circle cx={x} cy={y} r={radius} color="white" opacity={opacity} />
+      <Circle cx={x} cy={reflectedY} r={radius * 1.3} color="white" opacity={reflectionOpacity}>
+        <BlurMask blur={radius * 1.4} style="normal" />
+      </Circle>
+    </>
+  );
+}
+
 type Props = {
   sunCenterY: SharedValue<number>;
   sunCenterX: number;
@@ -312,6 +371,8 @@ export function SunsetLandscape({ sunCenterY, sunCenterX }: Props) {
     const belowHorizon = sunCenterY.value - horizonY;
     return Math.max(0, Math.min(1, belowHorizon / (sunDiameter * 1.5)));
   }, [sunCenterY, sunDiameter]);
+
+  const stars = useMemo(() => generateStars(45, width, horizonY), [width, horizonY]);
 
   const hills: HillConfig[] = [
     { left: -vmin(10, width, height), width: vmin(40, width, height), height: vmin(30, width, height), colors: [V1, V2, V3] },
@@ -458,6 +519,11 @@ export function SunsetLandscape({ sunCenterY, sunCenterX }: Props) {
 
       {/* Cool wash over the whole scene once the sun has set */}
       <TwilightVeil width={width} height={height} progress={twilightProgress} />
+
+      {/* Stars + their water reflections, fading in as dusk deepens */}
+      {stars.map((star, i) => (
+        <TwilightStar key={i} config={star} horizonY={horizonY} progress={twilightProgress} />
+      ))}
     </Canvas>
   );
 }

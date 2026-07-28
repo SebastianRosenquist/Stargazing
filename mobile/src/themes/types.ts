@@ -53,6 +53,10 @@ export type ThemeTiming = {
   messageReadDelay: number;
   /** release: delay between the message fading out and the closing overlay showing. */
   overlayDelay: number;
+  /** how long each message in the rotating script stays on screen before the next one swaps in. */
+  messageRotateInterval: number;
+  /** how long the crossfade between one message and the next takes. */
+  messageFadeDuration: number;
 };
 
 export const DEFAULT_TIMING: ThemeTiming = {
@@ -66,6 +70,8 @@ export const DEFAULT_TIMING: ThemeTiming = {
   driftDuration: 26000,
   messageReadDelay: 4700,
   overlayDelay: 1000,
+  messageRotateInterval: 4700,
+  messageFadeDuration: 500,
 };
 
 export type Theme = {

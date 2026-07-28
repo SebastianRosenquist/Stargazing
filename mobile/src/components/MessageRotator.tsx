@@ -7,10 +7,13 @@ type Props = {
   active: boolean;
   messages: string[];
   containerOpacity: SharedValue<number>;
+  defaultPrompt: string;
+  rotateInterval: number;
+  fadeDuration: number;
 };
 
-export function MessageRotator({ active, messages, containerOpacity }: Props) {
-  const { text, textOpacity } = useMessageRotation(messages, active);
+export function MessageRotator({ active, messages, containerOpacity, defaultPrompt, rotateInterval, fadeDuration }: Props) {
+  const { text, textOpacity } = useMessageRotation(messages, active, defaultPrompt, rotateInterval, fadeDuration);
 
   const containerStyle = useAnimatedStyle(() => ({ opacity: containerOpacity.value }));
   const textStyle = useAnimatedStyle(() => ({ opacity: textOpacity.value }));

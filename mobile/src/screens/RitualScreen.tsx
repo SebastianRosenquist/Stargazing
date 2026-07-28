@@ -76,6 +76,7 @@ export function RitualScreen({ authorName }: Props) {
           thoughtText={displayedThought}
           thoughtTextOpacity={thoughtTextOpacity}
           messages={theme.messages}
+          defaultPrompt={theme.prompt}
           rotateMessages={rotateMessages}
           messageOpacity={messageOpacity}
         />
@@ -103,6 +104,9 @@ export function RitualScreen({ authorName }: Props) {
             active={rotateMessages}
             messages={theme.messages}
             containerOpacity={messageOpacity}
+            defaultPrompt={theme.prompt}
+            rotateInterval={timing.messageRotateInterval}
+            fadeDuration={timing.messageFadeDuration}
           />
         </>
       ) : null}

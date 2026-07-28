@@ -15,6 +15,7 @@ type Props = {
   thoughtText: string;
   thoughtTextOpacity: SharedValue<number>;
   messages: string[];
+  defaultPrompt: string;
   rotateMessages: boolean;
   messageOpacity: SharedValue<number>;
 };
@@ -31,6 +32,7 @@ export function SunsetScene({
   thoughtText,
   thoughtTextOpacity,
   messages,
+  defaultPrompt,
   rotateMessages,
   messageOpacity,
 }: Props) {
@@ -64,7 +66,13 @@ export function SunsetScene({
   // component via `key={cycleKey}` — that also clears useMessageRotation's
   // internal refs below, which a same-instance value reset couldn't reach.
 
-  const { text: waterMessage, textOpacity: waterMessageOpacity } = useMessageRotation(messages, rotateMessages);
+  const { text: waterMessage, textOpacity: waterMessageOpacity } = useMessageRotation(
+    messages,
+    rotateMessages,
+    defaultPrompt,
+    timing.messageRotateInterval,
+    timing.messageFadeDuration
+  );
   const waterMessageStyle = useAnimatedStyle(() => ({ opacity: waterMessageOpacity.value * messageOpacity.value }));
 
   return (
