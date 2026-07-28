@@ -1,20 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
-import type { ReleaseStyle } from '../themes/types';
-
-// Timings and margin deltas ported directly from JS/message.js's showStar(),
-// disappearTitle(), initializeDisappear(), makeStarDisappear(), and resizeStar().
-// Scaled by the active theme's `pacingMultiplier` (default 1, i.e. unchanged).
-const STAR_REVEAL_DELAY = 7000;
-const TITLE_FADE_START = 5000;
-const TITLE_FADE_DURATION = 4000;
-const TITLE_REMOVE_DELAY = 9000;
-const AFTER_SUBMIT_DELAY = 4000; // initializeDisappear -> makeStarDisappear
-const BEFORE_SHRINK_DELAY = 3000; // makeStarDisappear -> resizeStar
-const SHRINK_DURATION = 60000;
-const DRIFT_DURATION = 26000;
-const MESSAGE_READ_DELAY = 4700; // let the final message stay fully visible before it fades
-const OVERLAY_DELAY = 1000;
+import { DEFAULT_TIMING, type ReleaseStyle, type ThemeTiming } from '../themes/types';
 
 // 'drift-away' (the default): star shrinks straight down in the center (as if
 // drifting away from the viewer), then drifts upward off-screen at the end.
@@ -40,10 +26,10 @@ export type LifecyclePhase = 'intro' | 'awaitingThought' | 'submitted' | 'done';
 
 type Options = {
   releaseStyle?: ReleaseStyle;
-  pacingMultiplier?: number;
+  timing?: ThemeTiming;
 };
 
-export function useStarLifecycle({ releaseStyle = 'drift-away', pacingMultiplier = 1 }: Options = {}) {
+export function useStarLifecycle({ releaseStyle = 'drift-away', timing = DEFAULT_TIMING }: Options = {}) {
   const [phase, setPhase] = useState<LifecyclePhase>('intro');
   const [titleVisible, setTitleVisible] = useState(true);
   const [rotateMessages, setRotateMessages] = useState(false);
@@ -65,20 +51,18 @@ export function useStarLifecycle({ releaseStyle = 'drift-away', pacingMultiplier
     timeouts.current.push(id);
   }, []);
 
-  const scaled = useCallback((ms: number) => ms * pacingMultiplier, [pacingMultiplier]);
-
   useEffect(() => {
     schedule(() => {
-      titleOpacity.value = withTiming(0, { duration: TITLE_FADE_DURATION });
-    }, TITLE_FADE_START);
-    schedule(() => setTitleVisible(false), TITLE_REMOVE_DELAY);
+      titleOpacity.value = withTiming(0, { duration: timing.titleFadeDuration });
+    }, timing.titleFadeStart);
+    schedule(() => setTitleVisible(false), timing.titleRemoveDelay);
 
     schedule(() => {
       setPhase('awaitingThought');
       starOpacity.value = withTiming(1, { duration: 3000 });
       inputOpacity.value = withTiming(1, { duration: 3000 });
       messageOpacity.value = withTiming(0.5, { duration: 3000 });
-    }, STAR_REVEAL_DELAY);
+    }, timing.starRevealDelay);
 
     return () => {
       timeouts.current.forEach(clearTimeout);
@@ -99,28 +83,33 @@ export function useStarLifecycle({ releaseStyle = 'drift-away', pacingMultiplier
 
         schedule(() => {
           if (releaseStyle === 'sink-down') {
-            starScale.value = withTiming(SHRINK_SCALE, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
-            starTranslateY.value = withTiming(SINK_TRANSLATE_Y, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
+            starScale.value = withTiming(SHRINK_SCALE, { duration: timing.shrinkDuration, easing: Easing.linear });
+            starTranslateY.value = withTiming(SINK_TRANSLATE_Y, { duration: timing.shrinkDuration, easing: Easing.linear });
           } else if (releaseStyle === 'float-downstream') {
-            starScale.value = withTiming(SHRINK_SCALE, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
+            starScale.value = withTiming(SHRINK_SCALE, { duration: timing.shrinkDuration, easing: Easing.linear });
           } else if (releaseStyle === 'stay-and-collect') {
-            starTranslateY.value = withTiming(STAY_RISE_TRANSLATE_Y, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
+            starTranslateY.value = withTiming(STAY_RISE_TRANSLATE_Y, { duration: timing.shrinkDuration, easing: Easing.linear });
+          } else if (releaseStyle === 'set-behind-horizon') {
+            // MainStar never mounts for this releaseStyle (the sunset scene
+            // renders its own sun instead) — no star transform to compute here.
           } else {
-            starScale.value = withTiming(SHRINK_SCALE, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
-            starTranslateY.value = withTiming(SHRINK_TRANSLATE_Y, { duration: scaled(SHRINK_DURATION), easing: Easing.linear });
+            starScale.value = withTiming(SHRINK_SCALE, { duration: timing.shrinkDuration, easing: Easing.linear });
+            starTranslateY.value = withTiming(SHRINK_TRANSLATE_Y, { duration: timing.shrinkDuration, easing: Easing.linear });
           }
 
           schedule(() => {
             if (releaseStyle === 'sink-down') {
-              starTranslateY.value = withTiming(SINK_FURTHER_TRANSLATE_Y, { duration: scaled(DRIFT_DURATION), easing: Easing.linear });
-              starOpacity.value = withTiming(0, { duration: scaled(DRIFT_DURATION), easing: Easing.linear });
+              starTranslateY.value = withTiming(SINK_FURTHER_TRANSLATE_Y, { duration: timing.driftDuration, easing: Easing.linear });
+              starOpacity.value = withTiming(0, { duration: timing.driftDuration, easing: Easing.linear });
             } else if (releaseStyle === 'float-downstream') {
-              starTranslateX.value = withTiming(DOWNSTREAM_TRANSLATE_X, { duration: scaled(DRIFT_DURATION), easing: Easing.linear });
+              starTranslateX.value = withTiming(DOWNSTREAM_TRANSLATE_X, { duration: timing.driftDuration, easing: Easing.linear });
             } else if (releaseStyle === 'stay-and-collect') {
               // Star holds in place, joining the (not-yet-persisted) cluster — no further motion.
+            } else if (releaseStyle === 'set-behind-horizon') {
+              // No-op here too — see the shrink-phase branch above.
             } else {
               starTranslateY.value = withTiming(SHRINK_TRANSLATE_Y + DRIFT_TRANSLATE_Y, {
-                duration: scaled(DRIFT_DURATION),
+                duration: timing.driftDuration,
                 easing: Easing.linear,
               });
             }
@@ -130,14 +119,14 @@ export function useStarLifecycle({ releaseStyle = 'drift-away', pacingMultiplier
 
               schedule(() => {
                 messageOpacity.value = withTiming(0, { duration: 1000 });
-                schedule(() => setPhase('done'), OVERLAY_DELAY);
-              }, MESSAGE_READ_DELAY);
-            }, scaled(DRIFT_DURATION));
-          }, scaled(SHRINK_DURATION));
-        }, scaled(BEFORE_SHRINK_DELAY));
-      }, scaled(AFTER_SUBMIT_DELAY));
+                schedule(() => setPhase('done'), timing.overlayDelay);
+              }, timing.messageReadDelay);
+            }, timing.driftDuration);
+          }, timing.shrinkDuration);
+        }, timing.beforeShrinkDelay);
+      }, timing.afterSubmitDelay);
     },
-    [phase, schedule, scaled, releaseStyle, starScale, starTranslateX, starTranslateY, starOpacity, messageOpacity, thoughtTextOpacity, inputOpacity]
+    [phase, schedule, timing, releaseStyle, starScale, starTranslateX, starTranslateY, starOpacity, messageOpacity, thoughtTextOpacity, inputOpacity]
   );
 
   const restart = useCallback(() => {

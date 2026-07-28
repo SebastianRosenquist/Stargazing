@@ -24,23 +24,31 @@ watching it drift, or sinking past it.
 
 ## Ritual / mechanic changes
 
-`releaseStyle` — reuse `drift-away` (the default's shrink-and-ascend), but slower
-(`pacingMultiplier: 1.2`) and paired with a warmer palette so the ascent reads as "rising into
-gentler light" rather than "disappearing into vast, indifferent space." No new release mechanic
-needed for this one.
-
 Input prompt: `"What did you just tell yourself?"`
 
-## Message script (draft)
+## Message script
 
 1. "That's a hard thing to say to yourself."
-2. "Notice how that feels, without making it bigger or smaller than it is."
-3. "You're not the only person who's ever felt this way about themselves."
-4. "Struggling like this doesn't make you a failure — it makes you human."
-5. "If a friend told you they felt this way, what would you say to them?"
-6. "Try saying that to yourself now."
-7. "You deserve the same kindness you'd give someone you love."
-8. "You can be imperfect and still be worthy of your own patience."
+2. "Let's just be with that for a second, instead of rushing past it."
+3. "Notice how that feels, without making it bigger or smaller than it is."
+4. "This is a moment of difficulty, and difficulty is part of every life — including yours."
+5. "You're not the only person who's ever felt this way about themselves."
+6. "Somewhere right now, someone else is being just as hard on themselves."
+7. "Struggling like this doesn't make you a failure — it makes you human."
+8. "If a friend told you they felt this way, what would you say to them?"
+9. "Maybe something like: 'that sounds really hard' or 'you're doing better than you think.'"
+10. "Try saying that to yourself now."
+11. "You deserve the same kindness you'd give someone you love."
+12. "Put a hand over your heart, if that helps it land."
+13. "You can be imperfect and still be worthy of your own patience."
+14. "This feeling will pass. You don't have to fix it right now — just be kind while it's here."
+
+(Expanded from an original 8-line draft to 14 on 2026-07-28 — the extra beats add a mindfulness
+opener, a second common-humanity line, a concrete example of what "talking to yourself like a
+friend" sounds like, and the hand-over-heart gesture from Neff's self-compassion break. At 14
+messages and the implemented `messageRotateInterval` of 6000ms, the script runs almost exactly once
+through without looping back to the start before the release motion ends — a nice side effect of
+landing at the top of the requested range instead of the bottom.)
 
 ## Visual / palette
 
