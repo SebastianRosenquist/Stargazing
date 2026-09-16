@@ -15,7 +15,13 @@ export function useMessageRotation(
   active: boolean,
   defaultPrompt: string,
   rotateIntervalMs = 4700,
-  fadeDurationMs = 500
+  fadeDurationMs = 500,
+  // Optional per-message duration overrides (ms), same length/order as
+  // `messages` — e.g. paced-breathing scripts where "hold for four" needs to
+  // actually last 4s rather than the theme's generic rotation interval.
+  // Falls back to `rotateIntervalMs` for any message without one (including
+  // every caller that omits this param entirely).
+  durations?: number[]
 ) {
   const [text, setText] = useState(defaultPrompt);
   const textOpacity = useSharedValue(1);
@@ -37,18 +43,31 @@ export function useMessageRotation(
     setText(RELAX_MESSAGE);
     indexRef.current = 0;
 
-    const interval = setInterval(() => {
-      textOpacity.value = withTiming(0, { duration: fadeDurationMs });
-      setTimeout(() => {
-        const next = messages[indexRef.current % messages.length];
-        indexRef.current += 1;
-        setText(next);
-        textOpacity.value = withTiming(1, { duration: fadeDurationMs });
-      }, fadeDurationMs);
-    }, rotateIntervalMs);
+    // A self-rescheduling timeout chain (rather than a fixed setInterval) so
+    // each message can hold the screen for its own duration when `durations`
+    // is provided; with no `durations`, this collapses to the same fixed
+    // cadence the old setInterval produced.
+    let timeoutId: ReturnType<typeof setTimeout>;
 
-    return () => clearInterval(interval);
-  }, [active, messages, textOpacity, rotateIntervalMs, fadeDurationMs, defaultPrompt]);
+    const tick = () => {
+      const currentDuration = durations?.[indexRef.current % durations.length] ?? rotateIntervalMs;
+
+      timeoutId = setTimeout(() => {
+        textOpacity.value = withTiming(0, { duration: fadeDurationMs });
+        setTimeout(() => {
+          const next = messages[indexRef.current % messages.length];
+          indexRef.current += 1;
+          setText(next);
+          textOpacity.value = withTiming(1, { duration: fadeDurationMs });
+          tick();
+        }, fadeDurationMs);
+      }, currentDuration);
+    };
+
+    tick();
+
+    return () => clearTimeout(timeoutId);
+  }, [active, messages, textOpacity, rotateIntervalMs, fadeDurationMs, defaultPrompt, durations]);
 
   return { text, textOpacity };
 }

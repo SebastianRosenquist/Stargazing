@@ -120,6 +120,12 @@ interaction happens (e.g. deep-linked custom meditations skip the picker entirel
 - `useCustomMeditation.ts`: unaffected in behavior, but conceptually it becomes "load an ad-hoc,
   unsaved Theme from a link" rather than a special case — worth a comment update, no functional
   change required.
+- `useMessageRotation.ts`: currently one `rotateIntervalMs` shared by every message in a theme.
+  Anxiety & Grounding needs its breath-count lines timed individually (see that brief's Pacing
+  section), which means an optional per-message duration array (e.g. `messageDurations?: number[]`
+  on `Theme`) that overrides the fixed interval when present. No other theme needs this yet, so add
+  it as an optional, backward-compatible field rather than reworking the existing single-interval
+  path.
 
 ## Non-goals for this doc
 

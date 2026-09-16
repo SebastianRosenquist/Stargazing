@@ -14,6 +14,7 @@ import { useAmbientAudio } from '../hooks/useAmbientAudio';
 import { useActiveTheme } from '../themes/ThemeProvider';
 import { getThemeTiming } from '../themes/types';
 import { SunsetScene } from '../components/sunset/SunsetScene';
+import { WaterdropBackground } from '../components/waterdrop/WaterdropBackground';
 
 type Props = {
   authorName: string | null;
@@ -80,6 +81,8 @@ export function RitualScreen({ authorName }: Props) {
           rotateMessages={rotateMessages}
           messageOpacity={messageOpacity}
         />
+      ) : theme.backgroundAsset === 'waterdrop' ? (
+        <WaterdropBackground active={rotateMessages} messageDurations={theme.messageDurations} palette={theme.palette} />
       ) : (
         <Starfield />
       )}
@@ -107,6 +110,7 @@ export function RitualScreen({ authorName }: Props) {
             defaultPrompt={theme.prompt}
             rotateInterval={timing.messageRotateInterval}
             fadeDuration={timing.messageFadeDuration}
+            messageDurations={theme.messageDurations}
           />
         </>
       ) : null}

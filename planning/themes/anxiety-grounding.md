@@ -49,17 +49,47 @@ should read as company, not diagnosis).
 12. "Let's breathe in again, for four..."
 13. "...and out, for six."
 
-### Pacing note (open question for implementation)
+### Pacing — decided: sync to the actual breath count
 
-The breath-count lines (2–4, 12–13) ideally sync to actual elapsed seconds rather than the fixed
-`MESSAGE_READ_DELAY` (4700ms) used for the default theme's rotation. Two options for Claude Code to
-choose between:
-- (a) simplest: keep fixed-interval rotation but tune interval to ~4–6s and accept it's an
-  approximation of the breath count, not literally timed
-- (b) more correct: give `MessageRotator` an optional per-message duration array so breath-count
-  lines can be timed to match "four seconds," "six seconds" exactly
+Resolved 2026-07-28 (was previously an open question): the message script should run on
+per-message durations timed to the actual breath count, not the single fixed rotation interval the
+other themes use. A generic "every ~5s" rotation undercuts the one thing this theme is supposed to
+do differently from the rest — give the body something to actually follow.
 
-Recommendation: ship (a) first, leave (b) as a fast-follow if it doesn't feel convincing in testing.
+Draft per-message durations (tune in testing, but this is the intended shape):
+
+| # | Message | Duration |
+|---|---|---|
+| 1 | "Let's slow down together." | 4000ms |
+| 2 | "Breathe in for four..." | 4000ms |
+| 3 | "...hold for four..." | 4000ms |
+| 4 | "...and out for six." | 6000ms |
+| 5 | "Notice five things you can see around you." | 6000ms |
+| 6 | "Notice four things you can hear." | 5000ms |
+| 7 | "Notice three things you can feel — the ground, your clothes, your breath." | 6000ms |
+| 8 | "You are here." | 3000ms |
+| 9 | "You are safe right now, in this moment." | 4000ms |
+| 10 | "Your breathing is slowing." | 4000ms |
+| 11 | "The feeling is still real. You're just not alone with it." | 5000ms |
+| 12 | "Let's breathe in again, for four..." | 4000ms |
+| 13 | "...and out, for six." | 6000ms |
+
+One pass through the script is ~61s; the theme's current `shrinkDuration` + `driftDuration`
+(78000ms + 33800ms = 111.8s) is roughly 1.8x that. Recommend letting it loop back to message 1 and
+run the breath cycle again rather than stretching the timing fields to force exactly one pass (the
+way `self-compassion.ts` does for its audio track) — a paced-breathing exercise is meant to be
+repeated for a couple of minutes, so a second partial pass reads as "keep breathing with me," not as
+a mistake the way a repeated self-compassion script might. Flag to Sebastian if a single-pass, no-repeat
+version is preferred instead.
+
+**Implementation impact (new, not previously scoped):** the shared `useMessageRotation` hook
+(`mobile/src/hooks/useMessageRotation.ts`) currently only accepts one `rotateIntervalMs` applied to
+every message. Supporting per-message durations means either a new optional parallel array (e.g.
+`messageDurations?: number[]` on `Theme`, same length as `messages`, consumed by
+`useMessageRotation` in place of the fixed interval when present) or an equivalent mechanism —
+`Theme`/`ThemeTiming` in `mobile/src/themes/types.ts` don't have a field for this yet. No other
+built theme needs this today, so it's safe to add as an optional, backward-compatible field rather
+than changing the existing single-interval behavior other themes rely on.
 
 ## Visual / palette
 
@@ -68,11 +98,12 @@ Cooler and dimmer than the warm orange/tomato default — suggest deep blue/teal
 than "warm star."
 
 `backgroundAsset: 'waterdrop'` — background is `resources/waterdrop/` (a single drop falling and
-rippling on impact, on repeat) instead of the default starfield. The ripple-then-fade loop is a
-near-literal match for paced breathing, and should ideally sync to the same breath count as the
-message script (see Pacing note above) — e.g. one ripple per breath cycle — rather than looping on
-its own independent timer. If syncing the two turns out to be more implementation effort than it's
-worth for v1, ship them on independent loops first; the visual metaphor still reads fine unsynced.
+rippling on impact, on repeat) instead of the default starfield. Per the Pacing decision above, the
+ripple should be driven by the same per-message durations as the breath-count lines rather than
+looping on its own independent timer — e.g. the ripple expands outward through "breathe in for
+four," holds through "hold for four," and fades through "and out for six" (messages 2–4 and 12–13
+in the table above), so the water motion and the breathing cue are the same signal instead of two
+unrelated loops that happen to share a screen.
 
 ## Audio
 

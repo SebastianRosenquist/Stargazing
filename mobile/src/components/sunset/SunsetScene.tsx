@@ -18,6 +18,7 @@ type Props = {
   defaultPrompt: string;
   rotateMessages: boolean;
   messageOpacity: SharedValue<number>;
+  messageDurations?: number[];
 };
 
 // CSS default `ease` is cubic-bezier(0.25, 0.1, 0.25, 1); the reverse of
@@ -35,6 +36,7 @@ export function SunsetScene({
   defaultPrompt,
   rotateMessages,
   messageOpacity,
+  messageDurations,
 }: Props) {
   const { width, height } = useWindowDimensions();
   const horizonY = height / 2;
@@ -71,7 +73,8 @@ export function SunsetScene({
     rotateMessages,
     defaultPrompt,
     timing.messageRotateInterval,
-    timing.messageFadeDuration
+    timing.messageFadeDuration,
+    messageDurations
   );
   const waterMessageStyle = useAnimatedStyle(() => ({ opacity: waterMessageOpacity.value * messageOpacity.value }));
 

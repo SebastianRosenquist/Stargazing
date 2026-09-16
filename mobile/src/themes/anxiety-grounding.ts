@@ -1,9 +1,6 @@
 import type { Theme } from './types';
 
-// From planning/themes/anxiety-grounding.md. Not built yet — shown as a
-// disabled "Coming soon" card in the picker. Fields are fully populated so
-// flipping `built` to true is the only remaining step per the theme
-// architecture doc's one-file-per-theme goal.
+// From planning/themes/anxiety-grounding.md.
 export const anxietyGrounding: Theme = {
   id: 'anxiety-grounding',
   title: 'Anxiety & Grounding',
@@ -24,6 +21,11 @@ export const anxietyGrounding: Theme = {
     "Let's breathe in again, for four...",
     '...and out, for six.',
   ],
+  // Per-message durations (ms), same order as `messages` — synced to the
+  // actual breath count (4s in / 4s hold / 6s out) rather than the generic
+  // rotation interval every other theme uses. See planning/themes/anxiety-grounding.md's
+  // Pacing section.
+  messageDurations: [4000, 4000, 4000, 6000, 6000, 5000, 6000, 3000, 4000, 4000, 5000, 4000, 6000],
   closingMessage: "Your breathing has slowed. The feeling may still be here, and that's okay — you're steadier than you were a few minutes ago.",
   releaseStyle: 'sink-down',
   // ~30% slower than the default — anxiety responds better to "settle down"
@@ -44,6 +46,6 @@ export const anxietyGrounding: Theme = {
     background: '#0a1523',
   },
   backgroundAsset: 'waterdrop',
-  built: false,
-  badge: 'Coming soon',
+  built: true,
+  badge: 'Grounding',
 };

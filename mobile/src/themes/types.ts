@@ -87,6 +87,14 @@ export type Theme = {
   ambientTrackId?: string;
   /** Per-field overrides of DEFAULT_TIMING — omit to use the defaults unchanged. */
   timing?: Partial<ThemeTiming>;
+  /**
+   * Optional per-message duration overrides (ms), same length/order as
+   * `messages`. When present, `useMessageRotation` uses each message's own
+   * duration instead of the fixed `timing.messageRotateInterval` — needed for
+   * paced-breathing scripts where lines like "hold for four" must actually
+   * last that long. Omit to keep the existing fixed-interval behavior.
+   */
+  messageDurations?: number[];
   /** Whether this theme is fully implemented. Unbuilt themes show as a disabled "Coming soon" card in the picker. */
   built: boolean;
   /** Short label shown on the picker card's badge pill, e.g. "Original", "The gentlest", "Coming soon". */
