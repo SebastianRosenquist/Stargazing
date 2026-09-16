@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   },
   track: {
     flexDirection: 'row',
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   topLabel: {
     position: 'absolute',
